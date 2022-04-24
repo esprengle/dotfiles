@@ -1,0 +1,333 @@
+# Print warning message
+
+# # echo ""
+# echo "  IF PROBLEM:"
+# echo "%    execute the following, then restart Terminal:"
+# echo ""
+# echo "      '/bin/mv ~/.bash_profile ~/.bash_profile.disabled'"
+# echo "
+# echo ""
+
+
+export ESIO_LOADED_RC="${ESIO_LOADED_RC:-}:bash_profile" 
+
+function whichrc() {
+    _sh_sourced_file="~/__esio__/shell_init_sourced.txt"
+    if [ -e ${_sh_sourced_file} ]; then
+        rm - f ${_sh_sourced_file}
+    fi
+    echo -e "~/.bash_profile" >>${_sh_sourced_file}
+    echo -e "Loaded:\t'$ESIO_LOADED_RC'"
+}
+
+
+# Load the shell dotfiles, and then some:
+# * ~/.path can be used to extend `$PATH`.
+# * ~/.extra can be used for other settings you don’t want to commit.
+# FROM:
+#   github.com/simensen/dotfiles
+for file in ~/.bash/{path,bash_prompt,bash_exports,bash_aliases,bash_functions,extra}; do
+    [ -r "${file}" ] && [ -f "${file}" ] && source "${file}";
+    export ESIO_LOADED_RC="${ESIO_LOADED_RC:-}:${file}"
+done
+unset file
+
+
+
+# ------- where.bash ------- #
+# see Brett Terpstra project 'where'
+# export WHERE_HOOK_SOURCE=true
+# export WHERE_EXPIRATION=86400   # once a day
+# source "$HOME/bin/_where.bash"
+
+
+
+# ------- SHELL OPTIONS ------- #
+shopt -s nocaseglob;        # Case insensitive globbing
+                # used in pathname expansion.
+shopt -s histappend;        # Append to the Bash history file 
+shopt -s cdspell;       # Autocorrect typos in path names when using `cd`
+
+
+# Enable some Bash 4 features when possible:
+# * `autocd`, e.g. `**/qux` will enter `./foo/bar/baz/qux`
+# * Recursive globbing, e.g. `echo **/*.txt`
+for option in autocd globstar; do
+    shopt -s "$option" 2> /dev/null;
+done;
+
+# Add tab completion for `defaults read|write NSGlobalDomain`
+# You could just use `-g` instead, but I like being explicit
+# MACOS: complete -W "NSGlobalDomain" defaults;
+
+
+# AMACOS: dd `killall` tab completion for common apps
+# MACOS: complete -o "nospace" -W "Bartender Calendar Contacts Copied Dash Day\ One Dock Drafts \
+# MACOS:     Dropbox Dropzone Finder Firefox Hook HoudahSpot iTunes Mail Messages nvALT Paste
+# MACOS:     PathFinder \
+# MACOS:     PyCharm Safari Sublime\ Text SystemUIServer Terminal Twitter VimR VSCode Yoink" killall;
+
+
+# TODO: look into first
+# Import ssh keys in keychain
+# ssh-add -A 2>/dev/null;
+
+
+# ==================
+# |||--- CORE ---|||
+# ==================
+
+# source ~/.color_prompt.sh
+
+# ===== VIM MODE ===== 
+# Use Vim keymappings in terminal
+set -o vi
+
+
+# MACOS: source ~/.local/bin/bashmarks.sh
+
+
+
+# source "/usr/local/bin/virtualenvwrapper.sh"
+
+
+
+
+# ====================
+# |||--- LINODE ---|||
+# ====================
+
+# ====linode-cli======
+#source /usr/local/etc/bash_completion.d/linode-cli.sh
+
+
+
+
+# ==========================
+# |||--- CHEAT ---|||
+# ==========================
+
+#source "$HOME/bin/cheat.bash"
+
+
+
+# =====================
+# |||--- EDITING ---|||
+# ==========================
+
+# Most of these Editing aliases are from Brett Terpstra:
+#   http://brettterpstra.com/2013/03/31/a-few-more-of-my-favorite-shell-aliases/
+
+# make executable: ax {{filename(s)}}
+alias ax="chmod a+x"
+
+# Disable [g]ate[k]eeper quarantine
+alias disgk="sudo xattr -rd com.apple.quarantine "
+alias delquar="sudo xattr -rd com.apple.quarantine "
+alias del-quar="sudo xattr -rd com.apple.quarantine "
+alias noquar="sudo xattr -rd com.apple.quarantine "
+
+
+function fuck () {
+	TF_PYTHONIOENCODING=$PYTHONIOENCODING;
+	export TF_SHELL=bash;
+	export TF_ALIAS=fuck;
+	export TF_SHELL_ALIASES=$(alias);
+	export TF_HISTORY=$(fc -ln -10);
+	export PYTHONIOENCODING=utf-8;
+	TF_CMD=$(
+	    thefuck THEFUCK_ARGUMENT_PLACEHOLDER "$@"
+	) && eval "$TF_CMD";
+	unset TF_HISTORY;
+	export PYTHONIOENCODING=$TF_PYTHONIOENCODING;
+	history -s $TF_CMD;
+}
+
+
+
+# powerline-daemon -q
+# POWERLINE_BASH_CONTINUATION=1
+# POWERLINE_BASH_SELECT=1
+# . /usr/local/lib/python3.7/site-packages/powerline/bindings/bash/powerline.sh
+
+
+# ==========================
+# |||--- APPLICATIONS ---|||
+# ==========================
+
+
+# =============================
+# |||--- File Navigation ---|||
+# =============================
+
+# Traverse parent directories with 'bd p[ath]' instead of 'cd../../'
+# From https://github.com/vigneshwaranr/bd
+# To install:
+
+# function install_bd () {
+#     if [ -r /usr/local/bin/bd ]; then
+#         wget --no-check-certificate -O /usr/local/bin/bd https://raw.github.com/vigneshwaranr/bd/master/bd
+#         chmod +rx /usr/local/bin/bd
+#         echo 'alias bd=". bd -si"' >> ~/.bashrc
+#     fi 
+# }
+
+alias bd=". bd -si"
+# See GitHub link for above alias for completion instructions
+source ${HOME}/bin/bash_completion.d/bd         # Bash completion for 'bd' command
+
+
+# ==================
+# |||--- FASD ---|||
+# ==================
+
+# Interactive fasd
+alias zi="fasd -e cd -i"
+# FASD executable init
+eval "$(fasd --init auto)"
+
+
+# Activate dircolors
+test -r "~/.dir_colors" && eval $(dircolors ~/.dir_colors)
+
+
+
+
+
+
+# =================================
+# |||--- FUNCTIONS & SCRIPTS ---|||
+# =================================
+
+# --------------------------
+#     TAB COMPLETIONS
+# --------------------------
+
+# ===== HOMEBREW =====
+
+# Homebrew tab completion
+HOMEBREW_PREFIX=$(brew --prefix)
+if type brew &>/dev/null; then
+    if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+        source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+    else
+        for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+            [[ -r "$COMPLETION" ]] && source "$COMPLETION"
+        done
+    fi
+fi
+
+
+# make tab cycle through commands after listing
+bind '"\t":menu-complete'
+bind "set show-all-if-ambiguous on"
+bind "set completion-ignore-case on"
+bind "set menu-complete-display-prefix on"
+
+
+# ------- HUB COMPLETION ------- # 
+if [ -f /usr/local/etc/bash_completion.d/hub.bash_completion.sh ]; then
+    . /usr/local/etc/bash_completion.d/hub.bash_completion.sh
+fi
+
+
+if [ -f  ~/bin/bash_completion.d/hub.bash_completion.sh]; then
+    . ~/bin/bash_completion.d/hub.bash_completion.sh
+fi
+
+
+
+# ------- CLIMATE CLI COMPLETION ------- #
+#source /etc/bash_completion.d/climate_completion
+
+
+# ------- iTERM 2 ------- #
+test -e "${HOME}/.iterm2_shell_integration.bash" && \
+        source "${HOME}/.iterm2_shell_integration.bash"
+
+# ------- RVM ------- #
+# Load RVM into a shell session *as a function*
+# [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"    
+
+
+# ------- PIP COMPLETION ------- #
+# START >>>pip bash completion <<<
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" M\
+                    COMP_CWORD=$COMP_CWORD \
+                    PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip
+# END >>>pip bash completion<<<
+
+
+# ------- PIP3 COMPLETION ------- #
+# START >>>pip3 bash completion <<<
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                    COMP_CWORD=$COMP_CWORD \
+                    PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip3
+# END >>>pip3 bash completion<<<
+
+
+# Created by `userpath` on 2019-10-19 03:13:35
+export PATH="$PATH:/Users/esio/.local/bin"
+
+
+# export PYTHONSTARTUP="~/.esio/python_startup.py"
+
+# ------- PYENV ------- #
+
+eval "$(pyenv init -)"  # TO TURN OFF PYENV:
+			#  - comment this line 
+			#  - source dotfiles
+
+export PYENV_ROOT="$HOME/.pyenv"
+
+
+# ------- VIRTUALENVWRAPPER ------- #
+# export WORKON_HOME="$HOME/.envs"
+# export VIRTUALENVWRAPPER_PYTHON="/usr/local/bin/python3"
+# export PROJECT_HOME="$HOME/devel/projects"
+
+
+
+# ------- PIPENV ------- #
+export PIPENV_VENV_IN_PROJECT=1
+export PIPENV_DEFAULT_PYTHON_VERSION="/Users/esio/.pyenv/shims/python"
+# export PIPENV_PYTHON="/Users/esio/.pyenv/versions/3.8.0/bin/python3.8"
+
+## -- pipenv completion -- ##
+_pipenv_completion() {
+    local IFS=$'\t'
+    COMPREPLY=( $( env COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   _PIPENV_COMPLETE=complete-bash $1 ) )
+    return 0
+}
+
+complete -F _pipenv_completion -o default pipenv
+## ----------------------- ##
+
+# ------- PIPX ------- #
+eval "$(register-python-argcomplete pipx)"
+
+
+# export PATH="$PATH:$HOME/scripts":"$HOME/.local":"$HOME/bin":"$HOME/Library/Python/3.7/lib/python/site-packages":"/usr/local/sbin"
+export PATH="$PYENV_ROOT/bin:$PATH:$HOME/scripts":"$HOME/.local":"$HOME/bin":"/usr/local/sbin"
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+
+# ------- STARSHIP ------- #
+eval "$(starship init bash)"
+
+
+# ------- GH ------- #
+eval "$(gh completion -s bash)"
+
+

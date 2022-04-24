@@ -1,0 +1,26 @@
+
+export EDITOR="nvim"
+
+: "${XDG_DATA_DIR:=${HOME}/.config}"
+: "${XDG_CACHE_DIR:=${HOME}/.cache}"
+: "${XDG_BIN_DIR:=${HOME}/.local/bin}"
+
+export XDG_DATA_DIR
+export XDG_CACHE_DIR
+export XDG_BIN_DIR
+
+export GITHUB_USER=esio
+
+
+# ------- Manpage
+export MANPAGER="nvim +Man!"
+
+
+# --- RIPGREP --- #
+export RIPGREP_CONFIG_PATH="${HOME}/.ripgreprc"
+
+
+# --- BAT --- #
+export BAT_STYLE="changes,grid,header,rule"
+
+

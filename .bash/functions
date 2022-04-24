@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+
+shopt -s nullglob
+shopt -s extglob
+
+esio_config_dir="${ESIO_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/esio}"
+
+
+
+#: ck
+#: ==
+#:
+#: Quick Check last 5 lines of file at end of last cmd
+ck() {
+    local path prevcmd_last_param n_lines first_arg
+    prevcmd_last_param=!$:p
+    if (( $# > 0 )); then
+        first_arg=$1
+        if [ -f first_arg ]; then
+            path=$first_arg
+        elif [ -f !$ ]; then
+            path="${@[-1]}"
+        fi
+    fi
+
+    tail -n 5
+}
+
+
+poetry.addlatest() {
+    # echo ${1+"${1}"@latest} || nay
+    poetry add "${1+${1}@latest}"
+}
+
+
+
+# ---------- DIRENV
+
+envrc_new() {
+    local envrc_file='.envrc'
+    local text='\
+# -*- mode: sh; -*-
+# (rootdir)/.envrc : direnv configuration file
+# see https://direnv.net/
+# pyversion=$(head .python-version)
+# pvenv=$(head .python-virtualenv)
+pyversion=3.9.7
+pvenv=myproject
+
+use python ${pyversion}
+# Create the virtualenv if not yet done
+layout virtualenv ${pyversion} ${pvenv}
+# activate it
+layout activate ${pvenv}-${pyversion}'
+
+    if [ -e .envrc ]; then
+        echo 'File '.envrc ' already exists' && exit 0
+    else
+        echo ${text} > ${envrc_file} && exit 0
+    fi
+}
+
+
+# ---------- Postgres
+
+postgres_start() {
+    # /home/esio/.asdf/installs/postgres/14.1/bin/pg_ctl \
+    #     -D /home/esio/.asdf/installs/postgres/14.1/data \
+    #     -l logfile \
+    #     start
+    asdf postgres \
+      -D /home/esio/.asdf/installs/postgres/14.1/data \
+      -l logfile \
+      start
+}
+
+
+# ---------- Printing
+
+print_hyperlink() {
+    local link=${1}
+    if [[ ${#} > 1 ]]; then
+        local text=${2}
+    else
+        local text=${link}
+    fi
+
+    printf '\e]8;;%s\e\\%s\e]8;;\e\\\n' ${link} ${text}
+}
+
+# ---------- RIPGREP
+
+rg_dotdirs() {
+    local path=${1-${PWD}}
+    fd -Ht d -d 1 '[.].*' ${path}
+}
+
+
+rg_dotfiles() {
+    local path=${1-${PWD}}
+    fd -Ht f -d 1 '[.].*' ${path}
+}
+
+
+
+# ---------- ASDF
+
+asdf_use_latest() {
+    (( $# < 1 )) \
+        && echo -e "\e[31musage:\e[m \
+        \e[38masdf_use_latest\e[m \
+        \e[1;34m<\e[m\e[3m\e[33mtoolname\e[0;33m\e[1;34m>\e[m \
+        \e[33m[\e[3;33mtoolname2 toolname3\e[m\e[3;33m...\e[m\e[33m]\e[m"
+
+    local toolname=${1}
+    shift
+
+    asdf global ${toolname} latest
+}
+
+
+# Function to match and kill
+#.  processes from BrettTerpstra.com
+# http://brettterpstra.com/2009/11/14/fk-a-useful-bash-function/
+# http://brettterpstra.com/2010/03/06/fk-redux/
+fp () {
+    #find and list processes matching a case-insensitive partial-match string
+    ps Ao pid,comm \
+    | awk '{match($0,/[^\/]+$/); print substr($0,RSTART,RLENGTH)": "$1}' \
+    | grep -i $1 \
+    | grep -v grep
+}
+
+fk () {
+	IFS=$'\n'
+	PS3='Kill which process? (1 to cancel): '
+	select OPT in "Cancel" $(fp $1); do
+		if [ $OPT != "Cancel" ]; then
+			kill $(echo $OPT|awk '{print $NF}')
+		fi
+		break
+	done
+	unset IFS
+}
+
+
+
+# Edit Markdown File from Writing directory
+# Finds Markdown files matching a Spotlight-style search query
+# If there's more than one, you get a menu
+edmd () {
+  WRITINGDIR="~/Dropbox/Computer_files/Mac/nvALT"
+  EDITCMD="subl"
+  filelist=$(mdfind -onlyin "$WRITINGDIR" "($@) AND kind:markdown")
+  listlength=$(mdfind -onlyin "$WRITINGDIR" -count "($@) AND kind:markdown")
+  if [[ $listlength > 0 ]]; then
+    if [[ $listlength == 1 ]]; then
+      $EDITCMD $filelist
+    else
+      IFS=$'\n'
+      PS3='Edit which file? (1 to cancel): '
+      select OPT in "Cancel" $filelist; do
+        if [ $OPT != "Cancel" ]; then
+          $EDITCMD $OPT
+        fi
+        break
+      done
+    fi
+  else
+    return 1
+  fi
+  return 0
+}
+
+
+# Function to produce markdown list from tab indented text from BrettTerpstra.com
+#   http://brettterpstra.com/2017/10/30/a-few-new-shell-tricks/
+#
+# output a quick markdown list from stdin to stdout
+qlist() {
+    sed -E '/^[     ]*$/d' | sed -E 's/^([    ]*)/\1* /'
+}
+
+# quick list to clipboard
+alias qlistpb="qlist | pbcopy"
+
+

@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+
+
+# ======================================
+# |||----- HELPFUL VARIABLES --------|||
+# ======================================
+# _varnames=(NEOVIM_RCFILE BASH_FILES_DIR CONFIG_DIR )
+
+NEOVIM_RCFILE="${HOME}/.config/nvim/init.vim"
+BASH_FILES_DIR="${HOME}/.bash"
+
+alias batsh="bat --language=sh "
+alias batpy="bat --language=py "
+
+
+has() {
+    type $1 &>/dev/null
+}
+
+
+
+if type clear &>/dev/null; then
+    alias clear="clear -x "
+    alias ccc="clear -x "
+    alias clear-including-scrollback="clear "
+fi
+
+
+# ==========================
+# |||------- GIT --------|||
+# ==========================
+
+
+# ===== GIT ALIASES =====
+
+
+# Git commit
+alias gitcom="git commit -m"
+
+# Git list remotes
+alias gitremotes="git remote -v"
+
+alias gstat="git status"
+alias gss="git status"
+alias gstats="git status -s"
+alias gs="git status -s"
+# Add and remove files from index
+alias gitar="git ls-files -d -m -o -z --exclude-standard | xargs -0 git update-index --add --remove"
+
+# Git push
+alias gpd="git push origin dev"
+alias gpm="git push origin master"
+
+#Git pull
+alias gpu="git pull"
+alias gpum="git pull origin master"
+alias gpud="git pull origin dev"
+
+# Remove git from a project
+alias ungit="find . -name '.git' -exec rm -rf {} \;"
+
+# Go to root dir of git repo 
+alias find-root="while [ ! -d .git ]; do cd ..; done"
+alias gitr="while [ ! -d .git ]; do cd ..; done"
+# [g]oto root OR [g]it root
+alias groot="while [ ! -d .git ]; do cd ..; done"
+alias gitroot="while [ ! -d .git ]; do cd ..; done"
+
+
+# --- EDIT FILE SHORTCUTS --- #
+alias rc="nvim ~/.bashrc "
+alias gc="nvim ~/.gitconfig "
+alias vimrc="nvim ${NEOVIM_RCFILE:-${HOME}/.config/nvim/init.vim} "
+alias direnvrc="nvim ~/.config/direnv/direnvrc "
+
+alias nvrc="nvim ~/.bashrc "
+alias nvbf="nvim ~/.bash/functions "
+alias nvba="nvim ~/.bash/aliases "
+alias nvbe="nvim ~/.bash/exports "
+alias nvinit="nvim ~/.config/nvim/init.vim "
+
+
+# ------- VSCode ------- #
+
+# edit-sh
+# =======
+#
+# Usage
+# -----
+# Edit current command line in VSCode. Once temp file opened in 
+# VSCode is closed, any text entered in the editor is now executed
+# in the shell. Waits for the temporary file that is opened to 
+# be closed. 
+alias edit-sh='ps aux | grep code | code -'
+alias editsh='ps aux | grep code | code -'  # Alias for `edit-sh`
+
+
+
+# Most of these Editing aliases are from Brett Terpstra:
+#   http://brettterpstra.com/2013/03/31/a-few-more-of-my-favorite-shell-aliases/
+
+# make executable: ax {{filename(s)}}
+alias ax="chmod a+x"
+
+# Edit crontab
+alias ecron="crontab -e" # To avoid accidentally deleting crontab (crontab -r is right next to -e)
+
+
+# { ---------- RIPGREP
+alias rgx="rg --hidden --no-ignore "
+alias rg.all="rg --hidden --no-ignore "
+alias rg.dot="rg --hidden "
+# }
+
+
+
+# ---------- EXA
+#
+# Quick command for clean concise dir output
+alias x="exa -laF --icons --header --group-directories-first --git --no-permissions --no-user "
+alias xx="exa -laFTL 1 --header --group-directories-first --git --no-permissions --no-user "
+alias xxx="exa -laFTL 1 --icons --header --group-directories-first --git --no-permissions --no-user "
+# --- Standard `ls' Aliases
+alias l="exa -1 --icons --group-directories-first "
+alias la="exa -1a --icons --group-directories-first "
+alias ls="exa --icons --group-directories-first "
+alias lsa="exa -a --icons --group-directories-first "
+# --- Long Listing
+alias ll="exa -lTL 1  --modified  --header --sort=name --no-permissions --no-user --no-filesize --time-style=iso --git -@ --classify "
+alias llx="exa -laF --icons --header --group-directories-first --git --no-permissions --no-user "
+alias lld="exa -alD --header --git --no-user --no-permissions --icons "
+alias lldx="exa -alD --header --git --no-user --no-permissions --icons -TL 2"
+alias lx="exa -1a --icons --header --group-directories-first --git --no-permissions --no-user "
+# --- Directory Listing
+alias ld="exa -1D --icons "
+alias lda="exa -1aD --icons "
+alias ldl="exa -alD --header --git --no-user --no-permissions --icons "
+alias ldx="exa -alD --header --git --no-user --no-permissions --icons -TL 2"
+
+alias viewd="exa --group-directories-first \
+    --long \
+    --header \
+    --modified \
+    --inode \
+    --links \
+    --group \
+    --numeric \
+    --git \
+    --icons \
+    --tree \
+    --no-permissions \
+    --octal-permissions \
+    --level=1 "
+
+alias viewda="exa --group-directories-first --long --header --modified --inode --links --group --numeric --git --icons --classify --tree  --no-permissions --octal-permissions  --all --level=1 "
+
+alias viewdd="exa --group-directories-first --long --header --modified --inode --links --group --numeric --git --icons --classify --tree  --no-permissions --octal-permissions --level=2 "
+
+alias viewdda="exa --group-directories-first --long --header --modified --inode --links --group --numeric --git --icons --classify --tree  --no-permissions --octal-permissions --all --level=2"
+
+alias viewddda="exa --group-directories-first --long --header --modified --inode --links --group --numeric --git --icons --classify --tree  --no-permissions --octal-permissions --all --level=3"
+
+alias viewddd="exa --group-directories-first --long --header --modified --inode --links --group --numeric --git --icons --classify --tree  --no-permissions --octal-permissions --level=3 "
+
+alias lla="ls -alTL 1  --modified  --header --sort=name --no-permissions --no-user --no-filesize --time-style=iso --git -@ --classify "
+# alias tailchk="bat -l sh --file-name=".bash/aliases" --style=changes,grid,header --line-range="$(( "$(cat ~/.bash/aliases | wc -l)" - 4 )):"" ~/.bash/aliases
+
+
+

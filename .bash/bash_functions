@@ -1,0 +1,53 @@
+
+# --- DIRENV --- #
+
+envrc_new() {
+    if [[ $# = 1 ]]; then
+        if [[ ${1} =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+            # Passed only project_name as argument
+            local vars_text='\npyversion=3.9.7\npvenv=myproject'
+        fi
+    fi
+
+    local version=${1}
+    local project_name=${2}
+    local envrc_file='.envrc'
+    local header_text='\
+# -*- mode: sh; -*-
+# (rootdir)/.envrc : direnv configuration file
+# see https://direnv.net/
+# pyversion=$(head .python-version)
+# pvenv=$(head .python-virtualenv)'
+    local vars_text='\
+pyversion=3.9.7
+pvenv=myproject
+
+use python ${pyversion}
+# Create the virtualenv if not yet done
+layout virtualenv ${pyversion} ${pvenv}
+# activate it
+layout activate ${pvenv}-${pyversion}'
+
+    if [ -e .envrc ]; then
+        echo 'File '.envrc ' already exists' && exit 0
+    else
+        echo ${text} > ${envrc_file} && exit 0
+    fi
+}
+
+
+
+# --- RIPGREP  ---#
+
+rg_dotdirs() {
+    local path=${1-${PWD}}
+    fd -Ht d -d 1 '[.].*' ${path}
+}
+
+
+rg_dotfiles() {
+    local path=${1-${PWD}}
+    fd -Ht f -d 1 '[.].*' ${path}
+}
+
+

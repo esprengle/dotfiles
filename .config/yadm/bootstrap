@@ -8,19 +8,95 @@
 [[ -r ./lib.sh ]] && . ./lib.sh
 
 
+init_brew() {
+  log_status "Initializing Homebrew..."
+
+  if has brew; then
+    local brew_prefix="$(brew --prefix)"
+
+    log_status '... > $BREW_PREFIX/bin/brew shellenv'
+    eval "$(${brew_prefix}/bin/brew shellenv)" 
+  else
+    log_error "!!! Cannot init brew if not installed"
+    has brew  # For return code
+  fi
+}
+
+
+
+init_asdf() {
+  local asdf_exe brew_prefix
+  brew_prefix="$(brew --prefix)"
+  asdf_exe="${brew_prefix}/opt/asdf/libexec/asdf.sh"
+
+  log_status "Initializing 'asdf'..."
+  log_status "... > $asdf_exe"
+  . "$asdf_exe"
+  log_status "... [Done]"
+}
+
+
+install_asdf() {
+  local brew_prefix
+
+  log_status "Checking for 'asdf'"
+  if has asdf; then
+    log_status "... `asdf` already installed"
+    return
+  fi
+
+  log_status "... Not found. Installing 'asdf'"
+
+  if ! has brew; then
+    log_error "!!! Brew must be installed before installing asdf."
+    false
+  fi
+  brew_prefix="$(brew --prefix)"
+
+  log_status "Running 'brew install asdf'"
+  brew update --preinstall && brew install --formula asdf
+  log_status "... [Done]"
+}
+
+
+install_neovim() {
+  if has nvim; then
+    return
+  fi
+
+  if ! has asdf; then
+    log_error "!!! Must install 'asdf' to install Neovim"
+    has asdf
+  fi
+
+  asdf plugin add neovim
+  asdf install neovim latest
+  asdf global neovim latest
+  asdf reshim
+}
+ 
+
 install_brew() {
   # Proudly borrowed from:
   # https://github.com/duckfullstop/dotfiles/blob/f734eea399a7ccd1c25b57242997e79f230abc4d/.config/yadm/bootstrap
 
+  local brew_prefix
+
   # install Homebrew if it's missing
   if ! command -v brew >/dev/null 2>&1; then
-    echo "Installing Homebrew"
+    log_status "Installing Homebrew"
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+    brew_prefix="$(brew --prefix)"
+    eval "$(${brew_prefix}/bin/brew shellenv)" 
+    brew tap homebrew/bundle &>/devnull
+    brew tap homebrew/cask
+    brew update --preinstall && brew install asdf
   fi
 
   if [ -f "$HOME/.Brewfile" ]; then
-    echo "Updating Homebrew bundle"
+    log_status "Updating Homebrew bundle"
     brew bundle --global
   fi
 }
@@ -31,8 +107,14 @@ install_rust() {
     if has curl; then
       log_status "Installing rust via rustup..."
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    else
+      log_error "!!! 'curl' required to install rust..." 
     fi
-  fi  
+  fi
+
+  [[ -r "${HOME}/.cargo/env" ]] && 
+    . "${HOME}/.cargo/env" || 
+    log_error "!!! Unable to find ${HOME}/.cargo/env"
 }
 
 
@@ -77,9 +159,13 @@ system_type=$(uname -s)
 
 # install_nix
 install_brew
+init_brew
+install_asdf
+init_asdf
+install_neovim
 install_rust
 
-if [ "$system_type" = "Darwin" ]; then
+if [[ "$system_type" = "Darwin" ]]; then
   configure_macos
 fi
 

@@ -1,0 +1,172 @@
+#!/bin/sh
+# vim: set ft=sh sw=2 et :
+
+#: Originally copied from:
+#:   https://github.com/DoomHammer/dotfiles/blob/master/.config/yadm/bootstrap
+
+
+[[ -r ./lib.sh ]] && . ./lib.sh
+
+
+init_brew() {
+  log_status "Initializing Homebrew..."
+
+  if has brew; then
+    local brew_prefix="$(brew --prefix)"
+
+    log_status '... > $BREW_PREFIX/bin/brew shellenv'
+    eval "$(${brew_prefix}/bin/brew shellenv)" 
+  else
+    log_error "!!! Cannot init brew if not installed"
+    has brew  # For return code
+  fi
+}
+
+
+
+init_asdf() {
+  local asdf_exe brew_prefix
+  brew_prefix="$(brew --prefix)"
+  asdf_exe="${brew_prefix}/opt/asdf/libexec/asdf.sh"
+
+  log_status "Initializing 'asdf'..."
+  log_status "... > $asdf_exe"
+  . "$asdf_exe"
+  log_status "... [Done]"
+}
+
+
+install_asdf() {
+  local brew_prefix
+
+  log_status "Checking for 'asdf'"
+  if has asdf; then
+    log_status "... `asdf` already installed"
+    return
+  fi
+
+  log_status "... Not found. Installing 'asdf'"
+
+  if ! has brew; then
+    log_error "!!! Brew must be installed before installing asdf."
+    false
+  fi
+  brew_prefix="$(brew --prefix)"
+
+  log_status "Running 'brew install asdf'"
+  brew update --preinstall && brew install --formula asdf
+  log_status "... [Done]"
+}
+
+
+install_neovim() {
+  if has nvim; then
+    return
+  fi
+
+  if ! has asdf; then
+    log_error "!!! Must install 'asdf' to install Neovim"
+    has asdf
+  fi
+
+  asdf plugin add neovim
+  asdf install neovim latest
+  asdf global neovim latest
+  asdf reshim
+}
+ 
+
+install_brew() {
+  # Proudly borrowed from:
+  # https://github.com/duckfullstop/dotfiles/blob/f734eea399a7ccd1c25b57242997e79f230abc4d/.config/yadm/bootstrap
+
+  local brew_prefix
+
+  # install Homebrew if it's missing
+  if ! command -v brew >/dev/null 2>&1; then
+    log_status "Installing Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+    brew_prefix="$(brew --prefix)"
+    eval "$(${brew_prefix}/bin/brew shellenv)" 
+    brew tap homebrew/bundle &>/devnull
+    brew tap homebrew/cask
+    brew update --preinstall && brew install asdf
+  fi
+
+  if [ -f "$HOME/.Brewfile" ]; then
+    log_status "Updating Homebrew bundle"
+    brew bundle --global
+  fi
+}
+
+
+install_rust() {
+  if ! has rustc; then
+    if has curl; then
+      log_status "Installing rust via rustup..."
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    else
+      log_error "!!! 'curl' required to install rust..." 
+    fi
+  fi
+
+  [[ -r "${HOME}/.cargo/env" ]] && 
+    . "${HOME}/.cargo/env" || 
+    log_error "!!! Unable to find ${HOME}/.cargo/env"
+}
+
+
+install_nix() {
+  # This one courtesy of:
+  # https://github.com/shadowrylander/shadowrylander/blob/35bb51822c46578d0a5da5810263fa85d464043c/.config/yadm/bootstrap#L56
+  install_nix_bin() { curl -L https://nixos.org/nix/install | sh; . ~/.nix-profile/etc/profile.d/nix.sh; }
+  command -v nix >/dev/null 2>&1 || install_nix_bin
+
+  if [ -f "$HOME/.config/nix/installed_packages" ]; then
+    # This list created with `nix-env -q > ~/.config/nix/installed_packages`
+    cat "$HOME/.config/nix/installed_packages" | xargs nix-env -i
+  fi
+  if [ -f "$HOME/.config/nix/installed_packages.local" ]; then
+    # Additional packages that might be needed here or there
+    cat "$HOME/.config/nix/installed_packages.local" | xargs nix-env -i
+  fi
+}
+
+
+configure_macos() {
+  # Disable Ctrl+Arrow mapping for Mission Control as it's more useful for jumping words in a terminal
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 "{enabled = 0; value = { parameters = (65535, 123, 8650752); type = standard;};}"
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 80 "{enabled = 0; value = { parameters = (65535, 123, 8781824); type = standard;};}"
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 "{enabled = 0; value = { parameters = (65535, 124, 8650752); type = standard;};}"
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 "{enabled = 0; value = { parameters = (65535, 124, 8781824); type = standard;};}"
+}
+
+
+configure_vim() {
+  # Install vim-plug for Vim
+  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  vim +'PlugInstall --sync' +qa
+  # Install vim-plug for Neovim
+  sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  nvim +'PlugInstall --sync' +qa
+}
+
+system_type=$(uname -s)
+
+# install_nix
+install_brew
+init_brew
+install_asdf
+init_asdf
+install_neovim
+install_rust
+
+if [[ "$system_type" = "Darwin" ]]; then
+  configure_macos
+fi
+
+configure_vim

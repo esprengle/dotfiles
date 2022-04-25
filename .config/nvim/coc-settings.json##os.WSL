@@ -1,0 +1,17 @@
+{
+    // Coc Preferendes
+    "coc.preferences.jumpCommand": "edit",
+    "python.jediEnabled": false,
+	"python.pythonPath": "/home/esio/.asdf/installs/python/3.10.1/bin/python",
+    // CocList settings
+    "list.normalMappings": {
+      "t": "action:tabe",
+      "v": "action:vsplit",
+      "s": "action:split",
+      "d": "expr:GetDeleteAction"
+    },
+    "list.insertMappings": {
+      "<C-t>": "action:tabe",
+      "<C-w>": "command:wincmd k"
+    }
+}

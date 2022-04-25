@@ -1,0 +1,42 @@
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only --features=interactive
+
+[delta]
+    features = decorations nord-line-numbers
+    syntax-theme = Nord
+
+[delta "interactive"]
+    keep-plus-minus-markers = false
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box ul
+    commit-style = raw
+    file-style = omit
+    # file-style = bold yellow ul
+    file-decoration-style = none
+    hunk-header-decoration-style = yellow box
+    hunk-header-file-style = bold blue
+    hunk-header-line-number-style = bold magenta
+    hunk-header-style = file line-number syntax
+
+[delta "nord-line-numbers"]
+    line-numbers = true
+    line-numbers-zero-style= "#d8dee9"
+    line-numbers-minus-style= bold red
+    line-numbers-plus-style= bold green
+
+[hub]
+	protocol = https
+
+[merge]
+    conflictstyle = diff3
+
+[credential]
+	helper = /mnt/c/Program\\ Files/Git/mingw64/libexec/git-core/git-credential-manager-core.exe
+
+[user]
+	email = ecsprengle@gmail.com
+	name = esprengle

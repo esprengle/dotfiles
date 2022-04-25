@@ -1,0 +1,6 @@
+aliases:
+    homework: issue list --assignee @me
+    igrep: '!gh issue list --label="$1" | rg "$2"'
+    pv: pr view
+    bugs: issue list --label=bugs
+    inew: 'issue create --title $1 --body $2 '

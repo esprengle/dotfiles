@@ -1,0 +1,44 @@
+# Example configuration file:
+
+# Set the theme to "TwoDark"
+--theme="TwoDark"
+# --theme="Nord"
+
+# Show line numbers, Git modifications and file header (but no grid)
+#  * full: enables all available components.
+#               * auto: same as 'full', unless the output is piped (default).
+#               * plain: disables all available components.
+#               * changes: show Git modification markers.
+#               * header: show filenames before the content.
+#               * grid: vertical/horizontal lines to separate side bar
+#                       and the header from the content.
+#               * rule: horizontal lines to delimit files.
+#               * numbers: show line numbers in the side bar.
+#               * snip: draw separation lines between distinct line ranges.
+--style='auto'
+
+# Use italic text on the terminal (not supported on all terminals)
+# --italic-text=always
+
+# Add mouse scrolling support in less (does not work with older
+# versions of "less")
+--pager="less -FR"
+
+# Use C++ syntax (instead of C) for .h header files
+# --map-syntax h:cpp
+
+# Use "gitignore" highlighting for ".ignore" files
+--map-syntax=".ignore:Git Ignore"
+--map-syntax=".rgignore:Git Ignore"
+
+--map-syntax=".envrc.local:DotENV"
+--map-syntax="local.env:DotENV"
+--map-syntax="local.envrc:DotENV"
+
+--map-syntax="poetry.lock:TOML"
+
+--map-syntax="*.its:Python"
+
+--map-syntax "*.nvim:VimL"
+--map-syntax "*.gvimrc:VimL"
+--map-syntax "*.gvim:VimL"

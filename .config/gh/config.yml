@@ -4,3 +4,8 @@ aliases:
     pv: pr view
     bugs: issue list --label=bugs
     inew: 'issue create --title $1 --body $2 '
+    iweb: issue list --web
+    iquery: issue list --search $1
+    is.search: issue list --search $1
+    repo.new: repo create --private --clone --license=MIT
+    rcreate: repo create --private --clone --license=MIT

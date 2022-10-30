@@ -20,9 +20,9 @@ has() {
 
 
 if type clear &>/dev/null; then
-    alias clear="clear -x "
-    alias ccc="clear -x "
-    alias clear-including-scrollback="clear "
+    alias clear="command -p clear -x "
+    alias ccc=" command -p clear -x "
+    alias clear-including-scrollback="command -p clear "
 fi
 
 

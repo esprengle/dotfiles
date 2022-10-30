@@ -3,10 +3,9 @@ syntax on
 call plug#begin('~/.local/share/nvim/plugged')
 Plug 'psf/black'
 " let g:fzf_install = 'yes | ./install'
-" Plug 'junegunn/fzf', { 'do': g:fzf_install }
-Plug '/usr/local/opt/fzf' 
 " Plugin outside ~/.vim/plugged with post-update hook
-" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug '/opt/homebrew/opt/fzf/install'
+" Plug 'junegunn/fzf', { 'dir': '/opt/homebrew/opt/fzf', 'do': './install --all' }
 Plug 'arcticicestudio/nord-vim'             " nord color scheme
 " Plug 'mhartington/oceanic-next'
 Plug 'jacekd/vim-iawriter', {'for': 'markdown'}
@@ -42,7 +41,9 @@ Plug 'plytophogy/vim-virtualenv'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 call plug#end()
 
-
+if has('nvim')
+  let $GIT_EDITOR = 'nvr -cc split --remote-wait'
+endif
 
 " {{{ COLORSCHEME
     " if (has("termguicolors"))  " Suggestedfor OceanicNext

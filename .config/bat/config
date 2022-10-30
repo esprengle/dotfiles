@@ -32,8 +32,14 @@
 --map-syntax=".rgignore:Git Ignore"
 
 --map-syntax=".envrc.local:DotENV"
---map-syntax="local.env:DotENV"
---map-syntax="local.envrc:DotENV"
+--map-syntax="*.env:DotENV"
+--map-syntax="*.envrc:DotENV"
+
+--map-syntax="**/.bash/*:Bourne Again Shell (bash)"
+# --map-syntax="**/.bash/aliases:Bourne Again Shell (bash)"
+# --map-syntax="**/.bash/exports:Bourne Again Shell (bash)"
+# --map-syntax="**/.bash/functions:Bourne Again Shell (bash)"
+# --map-syntax="**/.bash/profile:Bourne Again Shell (bash)"
 
 --map-syntax="poetry.lock:TOML"
 

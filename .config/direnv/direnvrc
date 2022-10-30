@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source "$(asdf direnv hook asdf)"
+# source "$(asdf direnv hook asdf)"
 
 layout_poetry() {
     if [[ ! -f pyproject.toml ]]; then

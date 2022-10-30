@@ -1,4 +1,4 @@
-# Print warning message
+: Print warning message
 
 # # echo ""
 # echo "  IF PROBLEM:"
@@ -332,4 +332,16 @@ eval "$(gh completion -s bash)"
 
 # ------- ASDF -------- #
 . /usr/local/opt/asdf/libexec/asdf.sh
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+. "$HOME/.cargo/env"
+
+
+[[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
+
+if type starship &>/dev/null; then
+  eval "$(starship init bash)"
+fi
+
 

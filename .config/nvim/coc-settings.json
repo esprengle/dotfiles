@@ -2,8 +2,12 @@
     // Coc Preferendes
     "coc.preferences.jumpCommand": "edit",
     "python.jediEnabled": false,
-	"python.pythonPath": "/Users/esio/.pyenv/versions/3.8.0",
-    "python.pipenvPath": "/Users/esio/.pyenv/versions/3.8.0/bin/pipenv",
+	"python.pythonPath": "/Users/esio/.asdf/shims/python",
+    "python.formatting.provider": "blackd",
+    "pyright.organizeimports.provider": "isort",
+    "pyright.testing.provider": "pytest",
+    "pyright.testing.pytestArgs": [],
+    // "python.pipenvPath": "/Users/esio/.pyenv/versions/3.8.0/bin/pipenv",
     // CocList settings
     "list.normalMappings": {
       "t": "action:tabe",

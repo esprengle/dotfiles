@@ -467,6 +467,8 @@ au Filetype python set
      \ fileformat=unix
 
 
+autocmd FileType python let b:coc_root_patterns = ['.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json', '.pyroot']
+
 " extraneous whitespace
 " au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
 
@@ -516,10 +518,10 @@ au FileType json syntax match Comment +\/\/.\+$+
 " Automatically source init.vim on save
 augroup autosourcing
     autocmd!
-    autocmd BufWritePost init.vim source %
+    autocmd BufWritePost init.vim source '~/.config/nvim/init.vim'
 augroup END
 
 
 " Path to your python executable
-let g:python3_host_prog='/Users/esio/.pyenv/versions/3.8.0/bin/python3.8'  " Python 3
+let g:python3_host_prog='/Users/esio/.asdf/installs/python/3.11.0/bin/python3.11'  " Python 3
 " let g:python_host_prog = '/usr/local/bin/python2'   " Python 2

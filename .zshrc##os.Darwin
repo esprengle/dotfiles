@@ -1,0 +1,122 @@
+
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+
+alias mkdirp="mkdir -p "
+
+
+# ---------- GITHUB
+export GITHUB_USER="esprengle"
+export GITHUB_TOKEN="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"
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# ---------- asdf
+. /opt/homebrew/opt/asdf/libexec/asdf.sh
+
+# ---------- VARIABLES
+[ -x "$(which nvim)" ] && export EDITOR=nvim || export EDITOR=vim
+
+
+# ---------- direnv
+# Hook direnv into your shell.
+eval "$(asdf exec direnv hook zsh)"
+
+# A shortcut for asdf managed direnv.
+direnv() {
+  asdf exec direnv "$@";
+}
+
+
+safe_source(){
+    local file="${1:-}"
+    
+    [[ -z $file ]] && return 1
+
+    if [[ -f "$file" ]]; then
+        . "$1"
+    else
+        false
+    fi
+}
+
+# _has_usage() {
+#     echo "usage: has <command>"
+#     echo ""
+#     echo "Example:"
+#     echo ""
+#     echo "    if has poetry; then"
+#     echo "      poetry new ."
+#     echo "    fi"
+#     echo ""
+# 
+#     return 1
+# }
+
+has() {
+    # (( $# != 1 )) && _has_usage
+    type "$1" &>/dev/null
+}
+
+autoload -U bashcompinit
+bashcompinit
+eval "$(register-python-argcomplete pipx)"
+
+
+
+
+. "$HOME/.cargo/env"
+
+if type gh &>/dev/null; then
+  eval "$(gh completion -s zsh)"
+fi
+
+if type brew &>/dev/null; then
+    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+    
+fi
+
+eval "$(zoxide init zsh)"
+
+# XXX: Testing safe_source(); uncomment line below for orig functionality
+safe_source ~/.asdf/installs/ripgrep/13.0.0/complete/_rg
+# . ~/.asdf/installs/ripgrep/13.0.0/complete/rg.bash
+
+
+# ---------- starship
+
+if type starship &>/dev/null; then
+  eval "$(starship init zsh)"
+  eval "$(starship completions zsh)"
+fi
+
+
+source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+export LESSOPEN="|/opt/homebrew/bin/lesspipe.sh %s"
+source ~/.bash/exports
+source ~/.bash/functions
+source ~/.bash/aliases 
+
+# Created by `pipx` on 2022-07-10 05:50:54
+export PATH="$PATH:/Users/esio/.local/bin"
+
+case "$PATH"
+    "*/Users/esio/.local/bin*" )
+        ;;
+    * )
+        export PATH="$PATH:/Users/esio/.local/bin"
+esac
+
+
+set -o vi
+
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+test -e "$HOME/.shellfishrc" && source "$HOME/.shellfishrc"
+
+[[ -d "~/.zfunc" ]] || mkdir -p "~/.zfunc"
+fpath+=~/.zfunc
+autoload -Uz compinit
+compinit

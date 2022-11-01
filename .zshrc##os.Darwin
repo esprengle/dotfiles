@@ -61,7 +61,7 @@ has() {
 
 autoload -U bashcompinit
 bashcompinit
-eval "$(register-python-argcomplete pipx)"
+# eval "$(register-python-argcomplete pipx)"
 
 
 
@@ -88,25 +88,25 @@ safe_source ~/.asdf/installs/ripgrep/13.0.0/complete/_rg
 
 if type starship &>/dev/null; then
   eval "$(starship init zsh)"
-  eval "$(starship completions zsh)"
 fi
 
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
 export LESSOPEN="|/opt/homebrew/bin/lesspipe.sh %s"
 source ~/.bash/exports
-source ~/.bash/functions
+# source ~/.bash/functions
 source ~/.bash/aliases 
 
 # Created by `pipx` on 2022-07-10 05:50:54
 export PATH="$PATH:/Users/esio/.local/bin"
 
-case "$PATH"
-    "*/Users/esio/.local/bin*" )
-        ;;
-    * )
-        export PATH="$PATH:/Users/esio/.local/bin"
-esac
+# case "$PATH"
+#     */Users/esio/.local/bin* )
+#         ;;
+#     * )
+#         export PATH="$PATH:/Users/esio/.local/bin"
+#         ;;
+# esac
 
 
 set -o vi
@@ -114,9 +114,11 @@ set -o vi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-test -e "$HOME/.shellfishrc" && source "$HOME/.shellfishrc"
+[[ -e "$HOME/.shellfishrc" ]] && source "$HOME/.shellfishrc"
 
 [[ -d "~/.zfunc" ]] || mkdir -p "~/.zfunc"
 fpath+=~/.zfunc
+
 autoload -Uz compinit
 compinit
+

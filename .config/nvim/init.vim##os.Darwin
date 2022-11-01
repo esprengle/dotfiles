@@ -370,20 +370,24 @@ function! BufBakAsConfig()
     :python3<<EOF
 from datetime import datetime, timedelta, tzinfo, timezone
 from pathlib import Path
-import pathlib_additions
+
+from dateutil.tz import gettz
+# import pathlib_additions
 import vim
+
+EST5EDT = gettz("EST5EDT")
 
 
 def cb_to_esioconfig():
     bufpath: Path = Path(vim.current.buffer.name)
-    dotbak: Path = Path(Path.home() / 'esioConfig/dotfiles/.config')
-    db_dirs: set = set(sorted([d.name for d in dotbak.directories()]))
-    est_offset = timedelta(hours=-5)
-    est = timezone(est_offset)
-    dt: datetime = datetime.now(est)
-    if (par_name:=bufpath.parent.name) in db_dirs:
+    dotbak: Path = Path.home() / 'Code/github/esprengle/esioConfig/dotfiles/.config'
+    db_dirs: set = set(sorted([d.name for d in dotbak.iterdir() if d.is_dir()]))
+
+    dt: datetime = datetime.now(EST5EDT)
+
+    if (par_name := bufpath.parent.name) in db_dirs:
         dest = Path(
-            dotbak / par_name / f"{bufpath.name}_{dt.strftime('%Y-%m-%dT%H-%M-%S%z')}"
+            dotbak / par_name / f'{bufpath.name}_{dt:%Y-%m-%dT%H-%M-%S%z)}'
         )
     else:
         newdir = Path(dotbak / par_name).mkdir(mode=0o777, parents=True)
@@ -516,12 +520,12 @@ au FileType json syntax match Comment +\/\/.\+$+
 
 
 " Automatically source init.vim on save
-augroup autosourcing
-    autocmd!
-    autocmd BufWritePost init.vim source '~/.config/nvim/init.vim'
-augroup END
+" augroup autosourcing
+"     autocmd!
+"     autocmd BufWritePost init.vim source %
+" augroup END
 
 
 " Path to your python executable
-let g:python3_host_prog='/Users/esio/.asdf/installs/python/3.11.0/bin/python3.11'  " Python 3
+let g:python3_host_prog='/Users/esio/.asdf/installs/python/3.11.0/bin/python3'  " Python 3
 " let g:python_host_prog = '/usr/local/bin/python2'   " Python 2

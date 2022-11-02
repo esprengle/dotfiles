@@ -100,7 +100,7 @@ source ~/.bash/aliases
 # Created by `pipx` on 2022-07-10 05:50:54
 export PATH="$PATH:/Users/esio/.local/bin"
 
-# case "$PATH"
+# case "$PATH" in
 #     */Users/esio/.local/bin* )
 #         ;;
 #     * )

@@ -9,29 +9,33 @@
 # echo ""
 
 
-export ESIO_LOADED_RC="${ESIO_LOADED_RC:-}:bash_profile" 
-
-function whichrc() {
-    _sh_sourced_file="~/__esio__/shell_init_sourced.txt"
-    if [ -e ${_sh_sourced_file} ]; then
-        rm - f ${_sh_sourced_file}
-    fi
-    echo -e "~/.bash_profile" >>${_sh_sourced_file}
-    echo -e "Loaded:\t'$ESIO_LOADED_RC'"
-}
-
 
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
 # FROM:
 #   github.com/simensen/dotfiles
-for file in ~/.bash/{path,bash_prompt,bash_exports,bash_aliases,bash_functions,extra}; do
+for file in ~/.bash/{path,bash_{prompt,exports,aliases,functions},extra}; do
     [ -r "${file}" ] && [ -f "${file}" ] && source "${file}";
-    export ESIO_LOADED_RC="${ESIO_LOADED_RC:-}:${file}"
 done
 unset file
 
+
+_es_init_dotfiles() {
+  local _shell="$SHELL"
+
+  # add pwd to stack; cd to home directory
+  pushd
+  local dotdir="${HOME}/.${_shell}"
+  mkdir -p "$dotdir"
+  pushd 
+
+ 
+  for file in ~/."${_shell}"/{path,bash_{prompt,exports,aliases,functions},extra}; do
+    [[ -n $file ]] && source $file;
+  done
+  unset file
+} 
 
 
 # ------- where.bash ------- #
@@ -43,30 +47,38 @@ unset file
 
 
 # ------- SHELL OPTIONS ------- #
-shopt -s nocaseglob;        # Case insensitive globbing
-                # used in pathname expansion.
-shopt -s histappend;        # Append to the Bash history file 
-shopt -s cdspell;       # Autocorrect typos in path names when using `cd`
-
+if [[ $SHELL =~ "bash" ]]; then
+  shopt -s nocaseglob;  # Case insensitive globbing
+                        # used in pathname expansion.
+  shopt -s histappend;  # Append to the Bash history file 
+  shopt -s cdspell;     # Autocorrect typos in path names when using `cd`
+fi
 
 # Enable some Bash 4 features when possible:
 # * `autocd`, e.g. `**/qux` will enter `./foo/bar/baz/qux`
 # * Recursive globbing, e.g. `echo **/*.txt`
-for option in autocd globstar; do
-    shopt -s "$option" 2> /dev/null;
-done;
+if [[ $SHELL =~ "bash" ]]; then
+  for _option in autocd globstar; do
+    shopt -s "$_option" 2>/dev/null;
+  done
+  unset _option
+fi
 
 # Add tab completion for `defaults read|write NSGlobalDomain`
 # You could just use `-g` instead, but I like being explicit
 # MACOS: complete -W "NSGlobalDomain" defaults;
 
 
-# AMACOS: dd `killall` tab completion for common apps
-# MACOS: complete -o "nospace" -W "Bartender Calendar Contacts Copied Dash Day\ One Dock Drafts \
-# MACOS:     Dropbox Dropzone Finder Firefox Hook HoudahSpot iTunes Mail Messages nvALT Paste
-# MACOS:     PathFinder \
-# MACOS:     PyCharm Safari Sublime\ Text SystemUIServer Terminal Twitter VimR VSCode Yoink" killall;
-
+#:
+#: `killall` tab completion
+#:
+#: This adds tab completion for common apps to 'killall' command
+if [[ uname -s =~ '[dD]arwin' ]]; then
+  complete -o "nospace" -W "Bartender Calendar Contacts Copied Dash Day\ One Dock Drafts \
+    Dropbox Dropzone Finder Firefox Hook HoudahSpot iTunes Mail Messages nvALT Paste
+    PathFinder \
+    PyCharm Safari Sublime\ Text SystemUIServer Terminal Twitter VimR VSCode Yoink" killall;
+fi
 
 # TODO: look into first
 # Import ssh keys in keychain
@@ -84,7 +96,7 @@ done;
 set -o vi
 
 
-# MACOS: source ~/.local/bin/bashmarks.sh
+[[ -n ~/.local/bin/bashmarks.sh ]] && source ~/.local/bin/bashmarks.sh
 
 
 
@@ -128,6 +140,11 @@ alias del-quar="sudo xattr -rd com.apple.quarantine "
 alias noquar="sudo xattr -rd com.apple.quarantine "
 
 
+unquarantine() {
+  sudo xattr -rd com.apple.quarantine "$@"
+} 
+
+
 function fuck () {
 	TF_PYTHONIOENCODING=$PYTHONIOENCODING;
 	export TF_SHELL=bash;
@@ -160,39 +177,52 @@ function fuck () {
 # |||--- File Navigation ---|||
 # =============================
 
-# Traverse parent directories with 'bd p[ath]' instead of 'cd../../'
-# From https://github.com/vigneshwaranr/bd
-# To install:
 
-# function install_bd () {
-#     if [ -r /usr/local/bin/bd ]; then
-#         wget --no-check-certificate -O /usr/local/bin/bd https://raw.github.com/vigneshwaranr/bd/master/bd
-#         chmod +rx /usr/local/bin/bd
-#         echo 'alias bd=". bd -si"' >> ~/.bashrc
-#     fi 
-# }
+#:
+#: bd
+#: --
+#:
+#: Traverse parent directories with 'bd p[ath]' instead of 'cd../../'
+#: From https://github.com/vigneshwaranr/bd
+#:
+#: See GitHub link for above alias for completion instructions.
+#:
+#: To install:
+#:
+#: _es_install_bd() {
+#:   if [ -r /usr/local/bin/bd ]; then
+#:     wget --no-check-certificate -O /usr/local/bin/bd https://raw.github.com/vigneshwaranr/bd/master/bd
+#:     chmod +rx /usr/local/bin/bd
+#:     if ! grep -q 'alias bd' ~/.bashrc; then
+#:         echo 'alias bd=". bd -si"' >> ~/.bashrc
+#:     fi
+#:   fi 
+#: }
+[[ -x bd ]] && alias bd=". bd -si"
 
-alias bd=". bd -si"
-# See GitHub link for above alias for completion instructions
-source ${HOME}/bin/bash_completion.d/bd         # Bash completion for 'bd' command
 
+#:
+#: bashmarks
+#:
+[[ -n ~/.local/bin/bashmarks.sh ]] && source "${HOME}/bin/bash_completion.d/bd"
 
 # ==================
 # |||--- FASD ---|||
 # ==================
-
-# Interactive fasd
-alias zi="fasd -e cd -i"
-# FASD executable init
-eval "$(fasd --init auto)"
-
-
-# Activate dircolors
-test -r "~/.dir_colors" && eval $(dircolors ~/.dir_colors)
+if type fasd &>/dev/null; then
+  # Interactive fasd
+  alias zi="fasd -e cd -i"
+  # FASD executable init
+  eval "$(fasd --init auto)"
+fi
 
 
-
-
+#:
+#: dir_colors
+#:
+if type dircolors &>/dev/null; then
+  [[ -r "~/.dir_colors" ]] && eval $(dircolors ~/.dir_colors)
+fi
 
 
 # =================================
@@ -204,17 +234,18 @@ test -r "~/.dir_colors" && eval $(dircolors ~/.dir_colors)
 # --------------------------
 
 # ===== HOMEBREW =====
-
-# Homebrew tab completion
-HOMEBREW_PREFIX=$(brew --prefix)
 if type brew &>/dev/null; then
-    if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
-        source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
-    else
-        for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
-            [[ -r "$COMPLETION" ]] && source "$COMPLETION"
-        done
-    fi
+  # Homebrew tab completion
+  HOMEBREW_PREFIX="${BREW_PREFIX:-$(brew --prefix)}"
+ 
+  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  else
+    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+      [[ -r "$COMPLETION" ]] && source "$COMPLETION"
+    done
+    unset COMPLETION
+  fi
 fi
 
 
@@ -225,15 +256,11 @@ bind "set completion-ignore-case on"
 bind "set menu-complete-display-prefix on"
 
 
-# ------- HUB COMPLETION ------- # 
-if [ -f /usr/local/etc/bash_completion.d/hub.bash_completion.sh ]; then
-    . /usr/local/etc/bash_completion.d/hub.bash_completion.sh
-fi
-
-
-if [ -f  ~/bin/bash_completion.d/hub.bash_completion.sh]; then
-    . ~/bin/bash_completion.d/hub.bash_completion.sh
-fi
+#:
+#: hub completions
+#:
+[[ -f /usr/local/etc/bash_completion.d/hub.bash_completion.sh ]] && . /usr/local/etc/bash_completion.d/hub.bash_completion.sh
+[[ -f ~/bin/bash_completion.d/hub.bash_completion.sh ]] && . ~/bin/bash_completion.d/hub.bash_completion.sh
 
 
 
@@ -254,7 +281,7 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && \
 # START >>>pip bash completion <<<
 _pip_completion()
 {
-    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" M\
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
                     COMP_CWORD=$COMP_CWORD \
                     PIP_AUTO_COMPLETE=1 $1 ) )
 }
@@ -310,24 +337,31 @@ _pipenv_completion() {
     return 0
 }
 
-complete -F _pipenv_completion -o default pipenv
+if type pipenv &>/dev/null; then
+  complete -F _pipenv_completion -o default pipenv
+fi
 ## ----------------------- ##
 
+
 # ------- PIPX ------- #
-eval "$(register-python-argcomplete pipx)"
+if type pipx &>/dev/null && type register-python-argcomplete &>/dev/null; then
+  eval "$(register-python-argcomplete pipx)"
+fi 
 
 
-# export PATH="$PATH:$HOME/scripts":"$HOME/.local":"$HOME/bin":"$HOME/Library/Python/3.7/lib/python/site-packages":"/usr/local/sbin"
 export PATH="$PYENV_ROOT/bin:$PATH:$HOME/scripts":"$HOME/.local":"$HOME/bin":"/usr/local/sbin"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 
 # ------- STARSHIP ------- #
-eval "$(starship init bash)"
+if type starship &>/dev/null; then
+  eval "$(starship init bash)"
+fi 
 
 
 # ------- GH ------- #
-eval "$(gh completion -s bash)"
-
+if type gh &>/dev/null; then
+  eval "$(gh completion -s bash)"
+fi
 

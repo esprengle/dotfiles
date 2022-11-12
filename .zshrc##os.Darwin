@@ -7,10 +7,10 @@ alias mkdirp="mkdir -p "
 
 
 # ---------- GITHUB
-export GITHUB_USER="esprengle"
-export GITHUB_TOKEN="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"
+export GITHUB_USER="${GITHUB_USER:-esprengle}"
+export GITHUB_TOKEN="${GITHUB_USER:-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}"
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # ---------- asdf
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
@@ -29,6 +29,10 @@ direnv() {
 }
 
 
+
+#: safe_source
+#:
+#: 
 safe_source(){
     local file="${1:-}"
     
@@ -41,29 +45,30 @@ safe_source(){
     fi
 }
 
-# _has_usage() {
-#     echo "usage: has <command>"
-#     echo ""
-#     echo "Example:"
-#     echo ""
-#     echo "    if has poetry; then"
-#     echo "      poetry new ."
-#     echo "    fi"
-#     echo ""
-# 
-#     return 1
-# }
+_has_usage() {
+  cat << EOF
+usage: has <command>
 
-has() {
-    # (( $# != 1 )) && _has_usage
-    type "$1" &>/dev/null
+Example:
+
+    if has poetry; then
+      poetry new .
+    fi 
+EOF
 }
 
-autoload -U bashcompinit
-bashcompinit
-# eval "$(register-python-argcomplete pipx)"
+has() {
+  (( $# = 0 )) && _has_usage && return 1
 
+  case $1 in
+    -h | --help)
+      _has_usage
+      return 0
+      ;;
+  esac
 
+  type "$1" &>/dev/null
+}
 
 
 . "$HOME/.cargo/env"
@@ -100,7 +105,7 @@ source ~/.bash/aliases
 # Created by `pipx` on 2022-07-10 05:50:54
 export PATH="$PATH:/Users/esio/.local/bin"
 
-# case "$PATH"
+# case "$PATH" in
 #     */Users/esio/.local/bin* )
 #         ;;
 #     * )
@@ -114,10 +119,19 @@ set -o vi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+test -e "$HOME"/.iterm2_shell_integration.zsh && source "$HOME"/.iterm2_shell_integration.zsh
+
+eval "$(pip completion --zsh)"
+
+eval "$(register-python-argcomplete pipx)"
+
 [[ -e "$HOME/.shellfishrc" ]] && source "$HOME/.shellfishrc"
 
 [[ -d "~/.zfunc" ]] || mkdir -p "~/.zfunc"
 fpath+=~/.zfunc
+
+autoload -Uz bashcompinit
+bashcompinit
 
 autoload -Uz compinit
 compinit

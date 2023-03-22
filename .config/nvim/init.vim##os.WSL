@@ -5,7 +5,6 @@ call plug#begin('~/.local/share/nvim/plugged')
     Plug 'stsewd/isort.nvim', { 'do': ':UpdateRemotePlugins' }
     "Plug '/usr/local/opt/fzf'
     " Plugin outside ~/.vim/plugged with post-update hook
-    Plug 'lotabout/skim', { 'dir': '~/.skim', 'do': './install' }
     " Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
     Plug 'arcticicestudio/nord-vim'             " nord color scheme
     Plug 'mhartington/oceanic-next'
@@ -218,8 +217,7 @@ call plug#end()
 
 
 " Edit init.vim
-command! -nargs=0 Edinit :tabe ~/.config/nvim/init.vim 
-command! -nargs=0 Ednvim :tabe ~/.config/nvim/init.vim
+command! -nargs=0 Edinit :tabe ~/.config/nvim/init.vim<CR>
 
 " ---------- TextEditingHelpers
     " --- CursorKeybindings
@@ -250,7 +248,6 @@ noremap <leader>bp :tab terminal bpython<CR>
 
 
 " ---------- Windows
-    nmap <leader>wc <C-W>c                    " close current window
     " Window splits
     nmap <leader>wv <C-W>v                    " vsplit current window
     nmap <leader>ws <C-W>s                    " split current window
@@ -336,39 +333,28 @@ noremap <leader>bp :tab terminal bpython<CR>
 " ------- BufBakAsConfig Mappings ------- "
 function! BufBakAsConfig()
     :python3<<EOF
-from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, tzinfo, timezone
 from pathlib import Path
 import pathlib_additions
 import vim
 
-try:
-    import pendulum
-    HAS_PENDULUM = True
-except ImportError:
-    HAS_PENDULUM = False
-
 
 def cb_to_esioconfig():
-    bufpath = Path(vim.current.buffer.name)
-
-    if (config_dir := Path.home() / "esioConfig").exists()):
-        backup_file = config_dir / "dotfiles/config" / bufpath.parent.name
-
-    config_dir = Path.home() / 'esioConfig/dotfiles/.config'
-    db_dirs = set(d.name for d in config_dir.iterdir())
-
-    now = datetime.now(tz=timezone.utc)
-
-    if (parent_name := bufpath.parent.name) in db_dirs:
+    bufpath: Path = Path(vim.current.buffer.name)
+    dotbak: Path = Path(Path.home() / 'esioConfig/dotfiles/.config')
+    db_dirs: set = set(sorted([d.name for d in dotbak.directories()]))
+    est_offset = timedelta(hours=-5)
+    est = timezone(est_offset)
+    dt: datetime = datetime.now(est)
+    if (par_name:=bufpath.parent.name) in db_dirs:
         dest = Path(
-            config_dir / parent_name / f"{bufpath.name}_{now.strftime('%Y-%m-%dT%H-%M-%S%z')}"
+            dotbak / par_name / f"{bufpath.name}_{dt.strftime('%Y-%m-%dT%H-%M-%S%z')}"
         )
     else:
-        newdir = Path(config_dir / parent_name).mkdir(mode=0o777, parents=True)
-        newdir = Path(config_dir / parname).mkdir(mode=0o777, parents=True)
+        newdir = Path(dotbak / par_name).mkdir(mode=0o777, parents=True)
+        newdir = Path(dotbak / parname).mkdir(mode=0o777, parents=True)
         dest = Path(
-            newdir.joinpath(f"{bufpath.name}_{now.strftime('%Y-%m-%dT%H-%M-%S%z')}")
+            newdir.joinpath(f"{bufpath.name}_{dt.strftime('%Y-%m-%dT%H-%M-%S%z')}")
         )
     bufpath.copy(dest)
 
@@ -398,7 +384,6 @@ function! Formd(option)
     :endif
     :call winrestview(save_view)
 endfunction
-
 
 " ---- formd mappings ---- "
 nmap <leader>fr :call Formd("-r")<CR>
@@ -459,16 +444,16 @@ au BufNewFile,BufRead *.yaml set
     \ autoindent
     \ fileformat=unix
 
-au Filetype ,*.html set
-    \ tabstop=4
-    \ softtabstop=4
-    \ shiftwidth=4
+au Filetype yaml set
+    \ tabstop=2
+    \ softtabstop=2
+    \ shiftwidth=2
     \ expandtab
     \ autoindent
     \ fileformat=unix
 
 
-au BufNewFile,BufRead *.js,*.css set
+au BufNewFile,BufRead *.js,*.html,*.css set
     \ tabstop=2
     \ softtabstop=2
     \ shiftwidth=2
@@ -492,12 +477,11 @@ au BufNewFile,BufRead *.taskpaper,*.todo set
 " Enable jsonc (sublime-style comments) compatability for linting
 au FileType json syntax match Comment +\/\/.\+$+
 
-" Automatically source init.vim on savx
+
+" Automatically source init.vim on save
 augroup autosourcing
-    " $$ Source `init.vim` File On Save $$
     autocmd!
-    autocmd BufWritePost init.vim source ~/.config/nvim/init.vim
-    " autocmd BufWritePost init.vim source %
+    autocmd BufWritePost init.vim source %
 augroup END
 
 
